@@ -2,11 +2,30 @@
 
 namespace App\Services;
 
+use App\Models\GmailToken;
 use Google\Client;
 use Google\Service\Gmail;
 use Google\Service\Gmail\Message;
 use Illuminate\Support\Collection;
 
+/**
+ * Service for interacting with the Gmail API.
+ *
+ * Supports two authentication modes:
+ *
+ * 1. OAuth 2.0 (development)
+ *    - Used with personal Gmail accounts.
+ *    - Configure GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET.
+ *    - Run `php artisan gmail:authorize` once to obtain a refresh token.
+ *
+ * 2. Service Account (production)
+ *    - Used with Google Workspace accounts via domain-wide delegation.
+ *    - Configure GMAIL_AUTH_CONFIG and GMAIL_IMPERSONATED_USER.
+ *    - No manual authorization needed.
+ *
+ * The active mode is determined by the GMAIL_AUTH_MODE env variable
+ * in config/gmail.php.
+ */
 class GmailService
 {
     private Client $client;
@@ -16,8 +35,25 @@ class GmailService
     public function __construct()
     {
         $this->client = new Client;
-        $this->client->setAuthConfig(config('gmail.auth_config'));
-        $this->client->setSubject(config('gmail.impersonated_user'));
+
+        if (config('gmail.auth_mode') === 'oauth') {
+            $this->client->setClientId(config('gmail.client_id'));
+            $this->client->setClientSecret(config('gmail.client_secret'));
+
+            $token = GmailToken::first();
+
+            if (! $token?->refresh_token) {
+                throw new \RuntimeException(
+                    'No Gmail refresh token found. Run `php artisan gmail:authorize` first.'
+                );
+            }
+
+            $this->client->fetchAccessTokenWithRefreshToken($token->refresh_token);
+        } else {
+            $this->client->setAuthConfig(config('gmail.auth_config'));
+            $this->client->setSubject(config('gmail.impersonated_user'));
+        }
+
         $this->client->addScope(Gmail::GMAIL_READONLY);
         $this->client->addScope(Gmail::GMAIL_MODIFY);
 

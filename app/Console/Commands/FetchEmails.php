@@ -14,7 +14,13 @@ class FetchEmails extends Command
 
     public function handle(): int
     {
-        if (! config('gmail.auth_config') || ! config('gmail.impersonated_user')) {
+        if (config('gmail.auth_mode') === 'oauth') {
+            if (! config('gmail.client_id') || ! config('gmail.client_secret')) {
+                $this->error('Gmail OAuth is not configured. Set GMAIL_CLIENT_ID and GMAIL_CLIENT_SECRET in .env');
+
+                return self::FAILURE;
+            }
+        } elseif (! config('gmail.auth_config') || ! config('gmail.impersonated_user')) {
             $this->error('Gmail API is not configured. Set GMAIL_AUTH_CONFIG and GMAIL_IMPERSONATED_USER in .env');
 
             return self::FAILURE;

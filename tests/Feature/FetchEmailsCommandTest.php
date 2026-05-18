@@ -8,12 +8,14 @@ use Google\Service\Gmail\Message;
 use function Pest\Laravel\mock;
 
 beforeEach(function () {
+    config()->set('gmail.auth_mode', 'service_account');
     config()->set('gmail.auth_config', storage_path('app/gmail/test-credentials.json'));
     config()->set('gmail.impersonated_user', 'test@example.com');
 });
 
 it('shows error when gmail is not configured', function () {
     config()->set('gmail.auth_config', null);
+    config()->set('gmail.impersonated_user', null);
 
     $this->artisan(FetchEmails::class)
         ->assertExitCode(1)
