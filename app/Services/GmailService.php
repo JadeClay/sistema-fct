@@ -39,6 +39,7 @@ class GmailService
         if (config('gmail.auth_mode') === 'oauth') {
             $this->client->setClientId(config('gmail.client_id'));
             $this->client->setClientSecret(config('gmail.client_secret'));
+            $this->client->setRedirectUri(config('gmail.redirect_uri'));
 
             $token = GmailToken::first();
 

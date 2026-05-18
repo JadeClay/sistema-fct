@@ -38,11 +38,18 @@ return [
     | Run `php artisan gmail:authorize` after configuring to obtain
     | a refresh token. The token is stored in the gmail_tokens table.
     |
+    | The redirect_uri defaults to "urn:ietf:wg:oauth:2.0:oob" which
+    | displays the authorization code on screen for you to copy-paste
+    | back into the terminal. This is the standard flow for Desktop
+    | OAuth clients.
+    |
     */
 
     'client_id' => env('GMAIL_CLIENT_ID'),
 
     'client_secret' => env('GMAIL_CLIENT_SECRET'),
+
+    'redirect_uri' => env('GMAIL_REDIRECT_URI', 'urn:ietf:wg:oauth:2.0:oob'),
 
     /*
     |--------------------------------------------------------------------------

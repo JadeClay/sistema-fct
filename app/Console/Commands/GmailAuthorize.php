@@ -27,6 +27,7 @@ class GmailAuthorize extends Command
         $client = new Client;
         $client->setClientId(config('gmail.client_id'));
         $client->setClientSecret(config('gmail.client_secret'));
+        $client->setRedirectUri(config('gmail.redirect_uri'));
         $client->addScope(Gmail::GMAIL_READONLY);
         $client->addScope(Gmail::GMAIL_MODIFY);
         $client->setAccessType('offline');
